@@ -9,6 +9,7 @@
 #include <EnhancedInputSubsystems.h>
 #include <EnhancedInputComponent.h>
 #include <GameFramework/CharacterMovementComponent.h>
+#include "Components/WidgetComponent.h"
 
 #include "BlasterCharacter.generated.h"
 
@@ -28,6 +29,9 @@ public:
 	virtual void Tick(float DeltaTime) override;
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
+	class UWidgetComponent* OverheadWidget;
 
 protected:
 	// Called when the game starts or when spawned
