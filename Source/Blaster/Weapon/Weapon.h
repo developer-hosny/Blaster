@@ -7,6 +7,7 @@
 #include "Components/SphereComponent.h"
 #include <Components/SkeletalMeshComponent.h>
 #include "Components/WidgetComponent.h"
+#include "Blaster/Character/BlasterCharacter.h"
 
 #include "Weapon.generated.h"
 
@@ -34,6 +35,8 @@ public:
 
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
+
+	void ShowPickupWidget(bool bShowWidget);
 
 protected:
 	// Called when the game starts or when spawned
