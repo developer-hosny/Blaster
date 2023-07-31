@@ -3,7 +3,7 @@
 
 #include "BlasterCharacter.h"
 #include "Blaster/Weapon/Weapon.h"
-#include <Net/UnrealNetwork.h>
+
 
 // Sets default values
 ABlasterCharacter::ABlasterCharacter()
@@ -27,6 +27,11 @@ ABlasterCharacter::ABlasterCharacter()
 	OverheadWidget = CreateDefaultSubobject<UWidgetComponent>(TEXT("OverheadWidget"));
 	OverheadWidget->SetupAttachment(RootComponent);
 
+
+	Compact = CreateDefaultSubobject<UCompactComponent>(TEXT("CompactComponent"));
+	Compact->SetIsReplicated(true);
+
+	GetCharacterMovement()->NavAgentProps.bCanCrouch = true;
 }
 
 void ABlasterCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -34,6 +39,16 @@ void ABlasterCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Ou
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
 	DOREPLIFETIME_CONDITION(ABlasterCharacter, OverlappingWeapon, COND_OwnerOnly);
+}
+
+void ABlasterCharacter::PostInitializeComponents()
+{
+	Super::PostInitializeComponents();
+
+	if (Compact)
+	{
+		Compact->Character = this;
+	}
 }
 
 
@@ -55,6 +70,40 @@ void ABlasterCharacter::BeginPlay()
 
 }
 
+void ABlasterCharacter::EquipButtonPressed()
+{
+	if (Compact)
+	{
+		if (HasAuthority()) {
+			Compact->EquipWeapon(OverlappingWeapon);
+		}
+		else 
+		{
+			ServerEquipButtonPressed();
+		}
+	}
+}
+
+void ABlasterCharacter::CrouchButtonPressed()
+{
+	if (bIsCrouched) {
+		UnCrouch();
+	}
+	else {
+		Crouch();
+	}
+}
+
+
+void ABlasterCharacter::ServerEquipButtonPressed_Implementation()
+{
+
+	if (Compact)
+	{
+		Compact->EquipWeapon(OverlappingWeapon);
+	}
+
+}
 
 void ABlasterCharacter::SetOverlappingWeapon(AWeapon* Weapon)
 {
@@ -72,7 +121,6 @@ void ABlasterCharacter::SetOverlappingWeapon(AWeapon* Weapon)
 		}
 	}
 }
-
 
 void ABlasterCharacter::OnRep_OverlappingWeapon(AWeapon* LastWeapon)
 {
@@ -112,6 +160,12 @@ void ABlasterCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCo
 
 		// Looking
 		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &ThisClass::Look);
+
+		// Equipping
+		EnhancedInputComponent->BindAction(EquipAction, ETriggerEvent::Triggered, this, &ThisClass::EquipButtonPressed);
+
+		// Crouching
+		EnhancedInputComponent->BindAction(CrouchAction, ETriggerEvent::Triggered, this, &ThisClass::CrouchButtonPressed);
 	}
 
 }
@@ -151,5 +205,11 @@ void ABlasterCharacter::Look(const FInputActionValue& Value)
 		AddControllerPitchInput(LookAxisVector.Y);
 	}
 }
+
+bool ABlasterCharacter::IsWeaponEquipped()
+{
+	return (Compact && Compact->EquippedWeapon);
+}
+
 
 
