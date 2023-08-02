@@ -5,29 +5,39 @@
 #include "CoreMinimal.h"
 #include "Components/SphereComponent.h"
 
-#include "CompactComponent.generated.h"
+#include "CombatComponent.generated.h"
 
 class AWeapon;
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
-class BLASTER_API UCompactComponent : public UActorComponent
+class BLASTER_API UCombatComponent : public UActorComponent
 {
 	GENERATED_BODY()
 
 public:	
-	UCompactComponent();
+	UCombatComponent();
 	friend class ABlasterCharacter;
 	void EquipWeapon(AWeapon* WeaponToEquip);
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
 protected:
 	virtual void BeginPlay() override;
+	void SetAiming(bool bIsAiming);
+
+	UFUNCTION(Server, Reliable)
+	void ServerSetAiming(bool bIsAiming);
+
+	UFUNCTION()
+	void OnRep_EquippedWeapon();
 
 private:
 	class ABlasterCharacter* Character;
 
-	UPROPERTY(Replicated)
+	UPROPERTY(ReplicatedUsing = OnRep_EquippedWeapon)
 	AWeapon* EquippedWeapon;
+
+	UPROPERTY(Replicated)
+	bool bAiming;
 
 public:	
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;

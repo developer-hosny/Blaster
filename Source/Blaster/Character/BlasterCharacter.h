@@ -11,7 +11,7 @@
 #include <GameFramework/CharacterMovementComponent.h>
 #include "Components/WidgetComponent.h"
 #include <Net/UnrealNetwork.h>
-#include "Blaster/CompactComponents/CompactComponent.h"
+#include "Blaster/CompactComponents/CombatComponent.h"
 
 #include "BlasterCharacter.generated.h"
 
@@ -52,14 +52,16 @@ private:
 	void OnRep_OverlappingWeapon(AWeapon* LastWeapon);
 
 	UPROPERTY(VisibleAnywhere)
-	class UCompactComponent* Compact;
+	class UCombatComponent* Combat;
 
 	UFUNCTION(Server, Reliable)
 	void ServerEquipButtonPressed();
 
+
 public:	
 	void SetOverlappingWeapon(AWeapon* Weapon);
 	bool IsWeaponEquipped();
+	bool IsAiming();
 
 #pragma region Inputs
 
@@ -81,18 +83,20 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	UInputAction* CrouchAction;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	UInputAction* AimAction;
+
 #pragma endregion
 
 
 #pragma region InputCallback
 
 	void HandleGroundMovementInput(const FInputActionValue& Value);
-
 	void Look(const FInputActionValue& Value);
-
 	void EquipButtonPressed();
-
 	void CrouchButtonPressed();
+	void AimButtonPressed();
+	void AimButtonReleased();
 #pragma endregion
 
 };

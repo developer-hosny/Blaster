@@ -28,8 +28,8 @@ ABlasterCharacter::ABlasterCharacter()
 	OverheadWidget->SetupAttachment(RootComponent);
 
 
-	Compact = CreateDefaultSubobject<UCompactComponent>(TEXT("CompactComponent"));
-	Compact->SetIsReplicated(true);
+	Combat = CreateDefaultSubobject<UCombatComponent>(TEXT("CompactComponent"));
+	Combat->SetIsReplicated(true);
 
 	GetCharacterMovement()->NavAgentProps.bCanCrouch = true;
 }
@@ -45,9 +45,9 @@ void ABlasterCharacter::PostInitializeComponents()
 {
 	Super::PostInitializeComponents();
 
-	if (Compact)
+	if (Combat)
 	{
-		Compact->Character = this;
+		Combat->Character = this;
 	}
 }
 
@@ -72,10 +72,10 @@ void ABlasterCharacter::BeginPlay()
 
 void ABlasterCharacter::EquipButtonPressed()
 {
-	if (Compact)
+	if (Combat)
 	{
 		if (HasAuthority()) {
-			Compact->EquipWeapon(OverlappingWeapon);
+			Combat->EquipWeapon(OverlappingWeapon);
 		}
 		else 
 		{
@@ -94,13 +94,28 @@ void ABlasterCharacter::CrouchButtonPressed()
 	}
 }
 
+void ABlasterCharacter::AimButtonPressed()
+{
+	if (Combat) {
+		Combat->SetAiming(true);
+	}
+
+}
+
+void ABlasterCharacter::AimButtonReleased()
+{
+	if (Combat) {
+		Combat->SetAiming(false);
+	}
+}
+
 
 void ABlasterCharacter::ServerEquipButtonPressed_Implementation()
 {
 
-	if (Compact)
+	if (Combat)
 	{
-		Compact->EquipWeapon(OverlappingWeapon);
+		Combat->EquipWeapon(OverlappingWeapon);
 	}
 
 }
@@ -166,6 +181,11 @@ void ABlasterCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCo
 
 		// Crouching
 		EnhancedInputComponent->BindAction(CrouchAction, ETriggerEvent::Triggered, this, &ThisClass::CrouchButtonPressed);
+
+		// Aiming
+		EnhancedInputComponent->BindAction(AimAction, ETriggerEvent::Triggered, this, &ThisClass::AimButtonPressed);
+		EnhancedInputComponent->BindAction(AimAction, ETriggerEvent::Completed, this, &ThisClass::AimButtonReleased);
+		
 	}
 
 }
@@ -208,8 +228,11 @@ void ABlasterCharacter::Look(const FInputActionValue& Value)
 
 bool ABlasterCharacter::IsWeaponEquipped()
 {
-	return (Compact && Compact->EquippedWeapon);
+	return (Combat && Combat->EquippedWeapon);
 }
 
-
+bool ABlasterCharacter::IsAiming()
+{
+	return (Combat && Combat->bAiming);
+}
 
