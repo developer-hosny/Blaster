@@ -12,6 +12,7 @@
 #include "Components/WidgetComponent.h"
 #include <Net/UnrealNetwork.h>
 #include "Blaster/CompactComponents/CombatComponent.h"
+#include "Components/CapsuleComponent.h"
 
 #include "BlasterCharacter.generated.h"
 

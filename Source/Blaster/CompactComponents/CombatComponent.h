@@ -39,6 +39,12 @@ private:
 	UPROPERTY(Replicated)
 	bool bAiming;
 
+	UPROPERTY(EditAnywhere)
+	float BaseWalkSpeed;
+
+	UPROPERTY(EditAnywhere)
+	float AimWalkSpeed;
+
 public:	
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
