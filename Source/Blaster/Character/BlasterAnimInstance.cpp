@@ -57,7 +57,7 @@ void UBlasterAnimInstance::NativeUpdateAnimation(float DeltaTime)
 		FVector OutPosition;
 		FRotator OutRotation;
 
-		BlasterCharacter->GetMesh()->TransformFromBoneSpace(FName("hand_r"), LeftHandTransform.GetLocation(), FRotator::ZeroRotator, OutPosition, OutRotation);
+		BlasterCharacter->GetMesh()->TransformFromBoneSpace(FName("Hand_R"), LeftHandTransform.GetLocation(), FRotator::ZeroRotator, OutPosition, OutRotation);
 
 		LeftHandTransform.SetLocation(OutPosition);
 		LeftHandTransform.SetRotation(FQuat(OutRotation));
