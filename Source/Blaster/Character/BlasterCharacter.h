@@ -13,6 +13,8 @@
 #include <Net/UnrealNetwork.h>
 #include "Blaster/CompactComponents/CombatComponent.h"
 #include "Components/CapsuleComponent.h"
+#include <Animation/AnimMontage.h>
+
 
 #include "BlasterCharacter.generated.h"
 
@@ -34,6 +36,8 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 	class UWidgetComponent* OverheadWidget;
+	void PlayFireMontage(bool bAiming);
+
 
 protected:
 	// Called when the game starts or when spawned
@@ -58,6 +62,8 @@ private:
 	UFUNCTION(Server, Reliable)
 	void ServerEquipButtonPressed();
 
+	UPROPERTY(EditAnywhere, Category = Combat)
+	class UAnimMontage* FireWeaponMontage;
 
 public:	
 	void SetOverlappingWeapon(AWeapon* Weapon);
@@ -89,6 +95,11 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	UInputAction* AimAction;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	UInputAction* FireAction;
+
+	
+
 #pragma endregion
 
 
@@ -100,6 +111,8 @@ public:
 	void CrouchButtonPressed();
 	void AimButtonPressed();
 	void AimButtonReleased();
+	void FireButtonPressed();
+	void FireButtonReleased();
 #pragma endregion
 
 };

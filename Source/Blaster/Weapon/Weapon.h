@@ -8,6 +8,7 @@
 #include <Components/SkeletalMeshComponent.h>
 #include "Components/WidgetComponent.h"
 #include "Blaster/Character/BlasterCharacter.h"
+#include "Animation/AnimationAsset.h"
 
 #include "Weapon.generated.h"
 
@@ -37,6 +38,7 @@ public:
 	virtual void Tick(float DeltaTime) override;
 	void ShowPickupWidget(bool bShowWidget);
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+	void Fire();
 
 protected:
 	// Called when the game starts or when spawned
@@ -77,6 +79,9 @@ private:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 	class UWidgetComponent* PickupWidget;
+
+	UPROPERTY(EditAnywhere, Category = "Weapon Properties")
+	class UAnimationAsset* FireAnimation;
 
 public:	
 	void SetWeaponState(EWeaponState State);
