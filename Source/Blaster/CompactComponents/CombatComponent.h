@@ -38,6 +38,8 @@ protected:
 	UFUNCTION(NetMulticast, Reliable)
 	void MulticastFire();
 
+	void TraceUnderCrosshairs(FHitResult& TraceHitResult);
+
 private:
 	class ABlasterCharacter* Character;
 
@@ -55,6 +57,8 @@ private:
 
 	UPROPERTY(BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	bool bFireButtonPressed;
+
+	FVector HitTarget;
 
 public:	
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;

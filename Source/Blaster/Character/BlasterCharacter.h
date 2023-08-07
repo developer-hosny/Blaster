@@ -3,9 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Camera/CameraComponent.h"
 #include "GameFramework/Character.h"
-#include "GameFramework/SpringArmComponent.h"
 #include <EnhancedInputSubsystems.h>
 #include <EnhancedInputComponent.h>
 #include <GameFramework/CharacterMovementComponent.h>
@@ -14,11 +12,11 @@
 #include "Blaster/CompactComponents/CombatComponent.h"
 #include "Components/CapsuleComponent.h"
 #include <Animation/AnimMontage.h>
-
+#include "GameFramework/SpringArmComponent.h"
 
 #include "BlasterCharacter.generated.h"
 
-class USpringArmComponent;
+
 class UInputMappingContext;
 class UInputAction;
 
@@ -44,11 +42,13 @@ protected:
 	virtual void BeginPlay() override;
 
 private:
-	UPROPERTY(VisibleAnywhere, Category = Camera)
-	USpringArmComponent* CameraBoom;
+	/** Camera boom positioning the camera behind the character */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
+	class USpringArmComponent* CameraBoom;
 
-	UPROPERTY(VisibleAnywhere, Category = Camera)
-	UCameraComponent* FollowCamera;
+	/** Follow camera */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
+	class UCameraComponent* FollowCamera;
 	
 	UPROPERTY(ReplicatedUsing = OnRep_OverlappingWeapon)
 	class AWeapon* OverlappingWeapon;

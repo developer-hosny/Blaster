@@ -4,8 +4,7 @@
 #include "BlasterCharacter.h"
 #include "Blaster/Weapon/Weapon.h"
 #include "BlasterAnimInstance.h"
-
-
+#include "Camera/CameraComponent.h"
 
 // Sets default values
 ABlasterCharacter::ABlasterCharacter()
@@ -14,13 +13,15 @@ ABlasterCharacter::ABlasterCharacter()
 	PrimaryActorTick.bCanEverTick = true;
 
 	CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));
-	CameraBoom->SetupAttachment(GetMesh());
-	//CameraBoom->TargetArmLength = 600.f;
+	CameraBoom->SetupAttachment(RootComponent);
+	CameraBoom->TargetArmLength = 350;	
 	CameraBoom->bUsePawnControlRotation = true;
 
 	FollowCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("FollowCamera"));
 	FollowCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName);
 	FollowCamera->bUsePawnControlRotation = false;
+
+
 	
 	// Make mouse look around character
 	bUseControllerRotationYaw = false;
