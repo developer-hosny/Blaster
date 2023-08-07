@@ -28,6 +28,10 @@ private:
 	UPROPERTY(VisibleAnywhere)
 	class UProjectileMovementComponent* ProjectileMovementComponent;
 
+	UPROPERTY(EditAnywhere)
+	class UParticleSystem* Tracer;
+
+	class UParticleSystemComponent* TracerComponent;
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
