@@ -13,6 +13,7 @@
 #include "Components/CapsuleComponent.h"
 #include <Animation/AnimMontage.h>
 #include "GameFramework/SpringArmComponent.h"
+#include "Camera/CameraComponent.h"
 
 #include "BlasterCharacter.generated.h"
 
@@ -65,12 +66,13 @@ private:
 	UPROPERTY(EditAnywhere, Category = Combat)
 	class UAnimMontage* FireWeaponMontage;
 
+
 public:	
 	void SetOverlappingWeapon(AWeapon* Weapon);
 	bool IsWeaponEquipped();
 	bool IsAiming();
 	AWeapon* GetEquippedWeapon();
-
+	FORCEINLINE UCameraComponent* GetFollowCamera() const { return FollowCamera; }
 
 #pragma region Inputs
 
