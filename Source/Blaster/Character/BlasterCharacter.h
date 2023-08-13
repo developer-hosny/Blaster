@@ -14,6 +14,7 @@
 #include <Animation/AnimMontage.h>
 #include "GameFramework/SpringArmComponent.h"
 #include "Camera/CameraComponent.h"
+#include "Blaster/Interfaces/InteractWithCrosshairsInterface.h"
 
 #include "BlasterCharacter.generated.h"
 
@@ -22,7 +23,7 @@ class UInputMappingContext;
 class UInputAction;
 
 UCLASS()
-class BLASTER_API ABlasterCharacter : public ACharacter
+class BLASTER_API ABlasterCharacter : public ACharacter, public IInteractWithCrosshairsInterface
 {
 	GENERATED_BODY()
 
