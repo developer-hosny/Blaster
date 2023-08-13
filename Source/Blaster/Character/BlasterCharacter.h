@@ -37,11 +37,14 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 	class UWidgetComponent* OverheadWidget;
 	void PlayFireMontage(bool bAiming);
-
+	
+	UFUNCTION(NetMulticast, Unreliable)
+	void MulticastHit();
 
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
+	void PlayHitReactMontage();
 
 private:
 	/** Camera boom positioning the camera behind the character */
@@ -67,6 +70,13 @@ private:
 	UPROPERTY(EditAnywhere, Category = Combat)
 	class UAnimMontage* FireWeaponMontage;
 
+	UPROPERTY(EditAnywhere, Category = Combat)
+	class UAnimMontage* HitReactMontage;
+
+	void HideCameraIfCharacterClose();
+
+	UPROPERTY(EditAnywhere)
+	float CameraThreshold = 200.f;
 
 public:	
 	void SetOverlappingWeapon(AWeapon* Weapon);

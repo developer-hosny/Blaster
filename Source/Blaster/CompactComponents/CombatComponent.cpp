@@ -140,19 +140,26 @@ void UCombatComponent::TraceUnderCrosshairs(FHitResult& TraceHitResult)
 	ViewportSize.X / 2.f, ViewportSize.Y / 2.f);
 
 	FVector CrosshairWorldPosition;
-	FVector CrosshairWordDirection;
+	FVector CrosshairWorldDirection;
  	bool bScreenToWorld = UGameplayStatics::DeprojectScreenToWorld(
 		UGameplayStatics::GetPlayerController(this, 0),
 		CrosshairLocation,
 		CrosshairWorldPosition,
-		CrosshairWordDirection
+		CrosshairWorldDirection
 	);
 
 	if (bScreenToWorld)
 	{
 		FVector Start = CrosshairWorldPosition;
-		
-		FVector End = Start + CrosshairWordDirection * TRACE_LENGTH;
+
+
+		if (Character)
+		{
+			float DistanceToCharacter = (Character->GetActorLocation() - Start).Size();
+			Start += CrosshairWorldDirection * (DistanceToCharacter + 100.f);
+		}
+
+		FVector End = Start + CrosshairWorldDirection * TRACE_LENGTH;
 
 		GetWorld()->LineTraceSingleByChannel(
 		TraceHitResult,
