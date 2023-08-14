@@ -9,6 +9,7 @@
 #include "DrawDebugHelpers.h"
 #include "Blaster/Character/BlasterCharacter.h"
 #include "Blaster/PlayerController/BlasterPlayerController.h"
+#include "TimerManager.h"
 
 #define TRACE_LENGTH 8000.f;
 
@@ -121,10 +122,44 @@ void UCombatComponent::FireButtonPressed(bool bPressed)
 	bFireButtonPressed = bPressed;
 	if (bFireButtonPressed)
 	{
-		FHitResult HitResult;
-		TraceUnderCrosshairs(HitResult);
-		ServerFire(HitResult.ImpactPoint);
+		Fire();
 	}
+}
+
+void UCombatComponent::Fire()
+{
+	if (CanFire())
+	{
+		bCanFire = false;
+		ServerFire(HitTarget);
+		StartFireTimer();
+	}
+}
+
+void UCombatComponent::StartFireTimer()
+{
+	if (EquippedWeapon == nullptr || Character == nullptr) return;
+	Character->GetWorldTimerManager().SetTimer(
+		FireTimer,
+		this,
+		&UCombatComponent::FireTimerFinished,
+		EquippedWeapon->FireDelay
+	);
+}
+
+void UCombatComponent::FireTimerFinished()
+{
+	if (EquippedWeapon == nullptr) return;
+	bCanFire = true;
+	if (bFireButtonPressed && EquippedWeapon->bAutomatic)
+	{
+		Fire();
+	}
+}
+
+bool UCombatComponent::CanFire()
+{
+	return bCanFire;
 }
 
 void UCombatComponent::TraceUnderCrosshairs(FHitResult& TraceHitResult)

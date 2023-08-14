@@ -188,7 +188,7 @@ void ABlasterCharacter::AimButtonReleased()
 
 void ABlasterCharacter::FireButtonPressed()
 {
-	if (Combat) 
+	if (IsWeaponEquipped())
 	{
 		Combat->FireButtonPressed(true);
 	}
@@ -196,7 +196,7 @@ void ABlasterCharacter::FireButtonPressed()
 
 void ABlasterCharacter::FireButtonReleased()
 {
-	if (Combat)
+	if (IsWeaponEquipped())
 	{
 		Combat->FireButtonPressed(false);
 	}

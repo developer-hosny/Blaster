@@ -98,6 +98,20 @@ private:
 
 	void InterpFOV(float DeltaTime);
 
+
+	/**
+	* Automatic fire
+	*/
+
+	FTimerHandle FireTimer;
+	bool bCanFire = true;
+
+	void StartFireTimer();
+	void FireTimerFinished();
+
+	bool CanFire();
+
+	void Fire();
 public:	
 
 

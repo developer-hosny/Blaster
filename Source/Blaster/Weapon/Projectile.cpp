@@ -50,7 +50,7 @@ void AProjectile::BeginPlay()
 
 	if (HasAuthority())
 	{
-		CollisionBox->OnComponentHit.AddDynamic(this, &AProjectile::OnHit);
+		CollisionBox->OnComponentHit.AddDynamic(this, &ThisClass::OnHit);
 	}
 	
 }
