@@ -1,6 +1,5 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
-
 #include "Projectile.h"
 #include "Kismet/GameplayStatics.h"
 #include "Particles/ParticleSystemComponent.h"
@@ -27,9 +26,7 @@ AProjectile::AProjectile()
 
 	ProjectileMovementComponent = CreateDefaultSubobject<UProjectileMovementComponent>(TEXT("ProjectileMovementComponent"));
 	ProjectileMovementComponent->bRotationFollowsVelocity = true;
-
 }
-
 
 // Called when the game starts or when spawned
 void AProjectile::BeginPlay()
@@ -39,31 +36,22 @@ void AProjectile::BeginPlay()
 	if (Tracer)
 	{
 		TracerComponent = UGameplayStatics::SpawnEmitterAttached(
-		Tracer,
+			Tracer,
 			CollisionBox,
 			FName(),
 			GetActorLocation(),
 			GetActorRotation(),
-			EAttachLocation::KeepWorldPosition
-		);
+			EAttachLocation::KeepWorldPosition);
 	}
 
 	if (HasAuthority())
 	{
 		CollisionBox->OnComponentHit.AddDynamic(this, &ThisClass::OnHit);
 	}
-	
 }
 
-void AProjectile::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
+void AProjectile::OnHit(UPrimitiveComponent *HitComp, AActor *OtherActor, UPrimitiveComponent *OtherComp, FVector NormalImpulse, const FHitResult &Hit)
 {
-	ABlasterCharacter* BlasterCharacter = Cast<ABlasterCharacter>(OtherActor);
-
-	if (BlasterCharacter)
-	{
-		BlasterCharacter->MulticastHit();
-	}
-
 	Destroy();
 }
 
@@ -71,9 +59,7 @@ void AProjectile::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimi
 void AProjectile::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
 }
-
 
 void AProjectile::Destroyed()
 {

@@ -13,40 +13,57 @@ UCLASS()
 class BLASTER_API AProjectile : public AActor
 {
 	GENERATED_BODY()
-	
-public:	
+
+public:
 	// Sets default values for this actor's properties
 	AProjectile();
 	virtual void Destroyed() override;
+
+	/**
+	 * Used with server-side rewind
+	 */
+
+	bool bUseServerSideRewind = false;
+	FVector_NetQuantize TraceStart;
+	FVector_NetQuantize100 InitialVelocity;
+
+	UPROPERTY(EditAnywhere)
+	float InitialSpeed = 15000;
+
+	// Only set this for Grenades and Rockets
+	UPROPERTY(EditAnywhere)
+	float Damage = 20.f;
+
+	// Doesn't matter for Grenades and Rockets
+	UPROPERTY(EditAnywhere)
+	float HeadShotDamage = 40.f;
 
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
 	UFUNCTION()
-	virtual void OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);
-
+	virtual void OnHit(UPrimitiveComponent *HitComp, AActor *OtherActor, UPrimitiveComponent *OtherComp, FVector NormalImpulse, const FHitResult &Hit);
 
 private:
 	UPROPERTY(EditAnywhere)
-	class UBoxComponent* CollisionBox;
+	class UBoxComponent *CollisionBox;
 
 	UPROPERTY(VisibleAnywhere)
-	class UProjectileMovementComponent* ProjectileMovementComponent;
+	class UProjectileMovementComponent *ProjectileMovementComponent;
 
 	UPROPERTY(EditAnywhere)
-	class UParticleSystem* Tracer;
+	class UParticleSystem *Tracer;
 
-	class UParticleSystemComponent* TracerComponent;
-
-	UPROPERTY(EditAnywhere)
-	class UParticleSystem* ImpactParticle;
+	class UParticleSystemComponent *TracerComponent;
 
 	UPROPERTY(EditAnywhere)
-	class USoundCue* ImpactSound;
+	class UParticleSystem *ImpactParticle;
 
-public:	
+	UPROPERTY(EditAnywhere)
+	class USoundCue *ImpactSound;
+
+public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
-
 };
