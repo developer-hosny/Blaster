@@ -1,12 +1,11 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
-
 #include "Weapon.h"
 
 // Sets default values
 AWeapon::AWeapon()
 {
- 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
+	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = false;
 	bReplicates = true;
 
@@ -31,9 +30,9 @@ AWeapon::AWeapon()
 void AWeapon::BeginPlay()
 {
 	Super::BeginPlay();
-	
 
-	if (HasAuthority()) {
+	if (HasAuthority())
+	{
 		AreaSphere->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
 		AreaSphere->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Overlap);
 		AreaSphere->OnComponentBeginOverlap.AddDynamic(this, &AWeapon::OnSphereOverlap);
@@ -46,20 +45,20 @@ void AWeapon::BeginPlay()
 	}
 }
 
-void AWeapon::OnSphereOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+void AWeapon::OnSphereOverlap(UPrimitiveComponent *OverlappedComponent, AActor *OtherActor, UPrimitiveComponent *OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult &SweepResult)
 {
 
-	ABlasterCharacter* BlasterCharacter = Cast<ABlasterCharacter>(OtherActor);
+	ABlasterCharacter *BlasterCharacter = Cast<ABlasterCharacter>(OtherActor);
 
-	if (BlasterCharacter) 
+	if (BlasterCharacter)
 	{
 		BlasterCharacter->SetOverlappingWeapon(this);
 	}
 }
 
-void AWeapon::OnSphereEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
+void AWeapon::OnSphereEndOverlap(UPrimitiveComponent *OverlappedComponent, AActor *OtherActor, UPrimitiveComponent *OtherComp, int32 OtherBodyIndex)
 {
-	ABlasterCharacter* BlasterCharacter = Cast<ABlasterCharacter>(OtherActor);
+	ABlasterCharacter *BlasterCharacter = Cast<ABlasterCharacter>(OtherActor);
 
 	if (BlasterCharacter)
 	{
@@ -67,11 +66,9 @@ void AWeapon::OnSphereEndOverlap(UPrimitiveComponent* OverlappedComponent, AActo
 	}
 }
 
-
 void AWeapon::SetWeaponState(EWeaponState State)
 {
 	WeaponState = State;
-
 
 	switch (WeaponState)
 	{
@@ -80,17 +77,28 @@ void AWeapon::SetWeaponState(EWeaponState State)
 	case EWeaponState::EWS_Equipped:
 		ShowPickupWidget(false);
 		AreaSphere->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+
+		WeaponMesh->SetSimulatePhysics(true);
+		WeaponMesh->SetEnableGravity(true);
+		WeaponMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+
 		break;
 	case EWeaponState::EWS_EquippedSecondary:
 		break;
 	case EWeaponState::EWS_Dropped:
+		if (HasAuthority())
+		{
+			AreaSphere->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+		}
+		WeaponMesh->SetSimulatePhysics(true);
+		WeaponMesh->SetEnableGravity(true);
+		WeaponMesh->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
 		break;
 	case EWeaponState::EWS_MAX:
 		break;
 	default:
 		break;
 	}
-
 }
 
 void AWeapon::OnRep_WeaponState()
@@ -102,10 +110,16 @@ void AWeapon::OnRep_WeaponState()
 		break;
 	case EWeaponState::EWS_Equipped:
 		ShowPickupWidget(false);
+		WeaponMesh->SetSimulatePhysics(true);
+		WeaponMesh->SetEnableGravity(true);
+		WeaponMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 		break;
 	case EWeaponState::EWS_EquippedSecondary:
 		break;
 	case EWeaponState::EWS_Dropped:
+		WeaponMesh->SetSimulatePhysics(true);
+		WeaponMesh->SetEnableGravity(true);
+		WeaponMesh->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
 		break;
 	case EWeaponState::EWS_MAX:
 		break;
@@ -118,7 +132,6 @@ void AWeapon::OnRep_WeaponState()
 void AWeapon::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
 }
 
 void AWeapon::ShowPickupWidget(bool bShowWidget)
@@ -130,14 +143,14 @@ void AWeapon::ShowPickupWidget(bool bShowWidget)
 }
 
 // Add variables that you need to replicate
-void AWeapon::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+void AWeapon::GetLifetimeReplicatedProps(TArray<FLifetimeProperty> &OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
 	DOREPLIFETIME(AWeapon, WeaponState);
 }
 
-void AWeapon::Fire(const FVector& HitTarget)
+void AWeapon::Fire(const FVector &HitTarget)
 {
 	if (FireAnimation)
 	{
@@ -146,24 +159,30 @@ void AWeapon::Fire(const FVector& HitTarget)
 
 	if (CasingClass)
 	{
-		const USkeletalMeshSocket* AmmoEjectSocket = WeaponMesh->GetSocketByName(FName("AmmoEject"));
+		const USkeletalMeshSocket *AmmoEjectSocket = WeaponMesh->GetSocketByName(FName("AmmoEject"));
 
 		if (AmmoEjectSocket)
 		{
 			FTransform SocketTransform = AmmoEjectSocket->GetSocketTransform(WeaponMesh);
-			UWorld* World = GetWorld();
+			UWorld *World = GetWorld();
 
 			if (World)
 			{
 				World->SpawnActor<ACasing>(
 					CasingClass,
 					SocketTransform.GetLocation(),
-					SocketTransform.GetRotation().Rotator()
-				);
-
+					SocketTransform.GetRotation().Rotator());
 			}
 		}
 	}
 }
 
-
+void AWeapon::Dropped()
+{
+	SetWeaponState(EWeaponState::EWS_Dropped);
+	FDetachmentTransformRules DetachRules(EDetachmentRule::KeepWorld, true);
+	WeaponMesh->DetachFromComponent(DetachRules);
+	SetOwner(nullptr);
+	// BlasterOwnerCharacter = nullptr;
+	// BlasterOwnerController = nullptr;
+}

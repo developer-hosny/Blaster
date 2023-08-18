@@ -15,6 +15,8 @@
 #include "GameFramework/SpringArmComponent.h"
 #include "Camera/CameraComponent.h"
 #include "Blaster/Interfaces/InteractWithCrosshairsInterface.h"
+#include "Blaster/GameMode/BlasterGameMode.h"
+#include "Components/TimelineComponent.h"
 
 #include "BlasterCharacter.generated.h"
 
@@ -37,14 +39,18 @@ public:
 	class UWidgetComponent *OverheadWidget;
 	void PlayFireMontage(bool bAiming);
 
+	UFUNCTION(NetMulticast, Reliable)
+	void MulticastElim();
+
+	void PlayElimMontage();
+	void Elim();
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 	void PlayHitReactMontage();
-
 	UFUNCTION()
 	void ReceiveDamage(AActor *DamagedActor, float Damage, const UDamageType *DamageType, class AController *InstigatorController, AActor *DamageCauser);
-
 	void UpdateHUDHealth();
 
 private:
@@ -74,6 +80,9 @@ private:
 	UPROPERTY(EditAnywhere, Category = Combat)
 	class UAnimMontage *HitReactMontage;
 
+	UPROPERTY(EditAnywhere, Category = Combat)
+	class UAnimMontage *ElimMontage;
+
 	void HideCameraIfCharacterClose();
 
 	UPROPERTY(EditAnywhere)
@@ -81,6 +90,15 @@ private:
 
 	UPROPERTY()
 	class ABlasterPlayerController *BlasterPlayerController;
+
+	bool bElimmed = false;
+
+	FTimerHandle ElimTimer;
+
+	UPROPERTY(EditDefaultsOnly)
+	float ElimDelay = 3.f;
+
+	void ElimTimerFinished();
 
 	/**
 	 * Player health
@@ -95,12 +113,36 @@ private:
 	UFUNCTION()
 	void OnRep_Health(float LastHealth);
 
+	/**
+	 * Dissolve effect
+	 */
+
+	UPROPERTY(VisibleAnywhere)
+	UTimelineComponent *DissolveTimeline;
+	FOnTimelineFloat DissolveTrack;
+
+	UPROPERTY(EditAnywhere)
+	UCurveFloat *DissolveCurve;
+
+	UFUNCTION()
+	void UpdateDissolveMaterial(float DissolveValue);
+	void StartDissolve();
+
+	// Dynamic instance that we can change at runtime
+	UPROPERTY(VisibleAnywhere, Category = Elim)
+	UMaterialInstanceDynamic *DynamicDissolveMaterialInstance;
+
+	// Material instance set on the Blueprint, used with the dynamic material instance
+	UPROPERTY(EditAnywhere, Category = Elim)
+	UMaterialInstance *DissolveMaterialInstance;
+
 public:
 	void SetOverlappingWeapon(AWeapon *Weapon);
 	bool IsWeaponEquipped();
 	bool IsAiming();
 	AWeapon *GetEquippedWeapon();
 	FORCEINLINE UCameraComponent *GetFollowCamera() const { return FollowCamera; }
+	FORCEINLINE bool IsElimmed() const { return bElimmed; }
 
 #pragma region Inputs
 

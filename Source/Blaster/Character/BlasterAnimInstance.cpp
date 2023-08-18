@@ -1,6 +1,5 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
-
 #include "BlasterAnimInstance.h"
 #include "Blaster/Weapon/Weapon.h"
 
@@ -15,11 +14,13 @@ void UBlasterAnimInstance::NativeUpdateAnimation(float DeltaTime)
 {
 	Super::NativeUpdateAnimation(DeltaTime);
 
-	if (BlasterCharacter == nullptr) {
+	if (BlasterCharacter == nullptr)
+	{
 		BlasterCharacter = Cast<ABlasterCharacter>(TryGetPawnOwner());
 	}
 
-	if (BlasterCharacter == nullptr) return;
+	if (BlasterCharacter == nullptr)
+		return;
 
 	FVector Velocity = BlasterCharacter->GetVelocity();
 	Velocity.Z = 0.f;
@@ -32,7 +33,9 @@ void UBlasterAnimInstance::NativeUpdateAnimation(float DeltaTime)
 	EquippedWeapon = BlasterCharacter->GetEquippedWeapon();
 	bIsCrouched = BlasterCharacter->bIsCrouched;
 	bAiming = BlasterCharacter->IsAiming();
+	bElimmed = BlasterCharacter->IsElimmed();
 
+	UE_LOG(LogTemp, Warning, TEXT("bElimmed: %d"), bElimmed);
 
 	// Offset Yaw for strafing
 	const FRotator AimRotator = BlasterCharacter->GetBaseAimRotation();
