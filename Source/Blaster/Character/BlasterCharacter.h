@@ -34,6 +34,7 @@ public:
 	virtual void SetupPlayerInputComponent(class UInputComponent *PlayerInputComponent) override;
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty> &OutLifetimeProps) const override;
 	virtual void PostInitializeComponents() override;
+	virtual void Destroyed() override;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 	class UWidgetComponent *OverheadWidget;
@@ -135,6 +136,19 @@ private:
 	// Material instance set on the Blueprint, used with the dynamic material instance
 	UPROPERTY(EditAnywhere, Category = Elim)
 	UMaterialInstance *DissolveMaterialInstance;
+
+	/**
+	 * Elim effects
+	 */
+
+	UPROPERTY(EditAnywhere)
+	UParticleSystem *ElimBotEffect;
+
+	UPROPERTY(VisibleAnywhere)
+	UParticleSystemComponent *ElimBotComponent;
+
+	UPROPERTY(EditAnywhere)
+	class USoundCue *ElimBotSound;
 
 public:
 	void SetOverlappingWeapon(AWeapon *Weapon);
