@@ -6,7 +6,6 @@
 #include "GameFramework/PlayerStart.h"
 #include "Blaster/PlayerState/BlasterPlayerState.h"
 #include "Blaster/PlayerController/BlasterPlayerController.h"
-// #include "Blaster/GameState/BlasterGameState.h"
 
 void ABlasterGameMode::Tick(float DeltaTime)
 {
@@ -15,14 +14,19 @@ void ABlasterGameMode::Tick(float DeltaTime)
 void ABlasterGameMode::PlayerEliminated(ABlasterCharacter *ElimmedCharacter, ABlasterPlayerController *VictimController, ABlasterPlayerController *AttackerController)
 {
     ABlasterPlayerState *AttackerPlayerState = AttackerController ? Cast<ABlasterPlayerState>(AttackerController->PlayerState) : nullptr;
-    ABlasterPlayerState *VictimControllerState = AttackerController ? Cast<ABlasterPlayerState>(VictimController->PlayerState) : nullptr;
-    if (AttackerPlayerState && AttackerPlayerState != VictimControllerState)
+    ABlasterPlayerState *VictimPlayerState = AttackerController ? Cast<ABlasterPlayerState>(VictimController->PlayerState) : nullptr;
+    if (AttackerPlayerState && AttackerPlayerState != VictimPlayerState)
     {
-        AttackerPlayerState->AddToScore(1.f);
+        AttackerPlayerState->AddToScore(1);
     }
     if (ElimmedCharacter)
     {
         ElimmedCharacter->Elim();
+    }
+
+    if (VictimPlayerState)
+    {
+        VictimPlayerState->AddToDefeats(1);
     }
 }
 

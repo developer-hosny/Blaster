@@ -35,7 +35,6 @@ void UBlasterAnimInstance::NativeUpdateAnimation(float DeltaTime)
 	bAiming = BlasterCharacter->IsAiming();
 	bElimmed = BlasterCharacter->IsElimmed();
 
-	UE_LOG(LogTemp, Warning, TEXT("bElimmed: %d"), bElimmed);
 
 	// Offset Yaw for strafing
 	const FRotator AimRotator = BlasterCharacter->GetBaseAimRotation();
