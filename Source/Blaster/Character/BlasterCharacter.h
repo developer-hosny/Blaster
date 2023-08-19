@@ -54,6 +54,9 @@ protected:
 	void ReceiveDamage(AActor *DamagedActor, float Damage, const UDamageType *DamageType, class AController *InstigatorController, AActor *DamageCauser);
 	void UpdateHUDHealth();
 
+	// Poll for any relelvant classes and initialize our HUD
+	void PollInit();
+
 private:
 	/** Camera boom positioning the camera behind the character */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
@@ -124,6 +127,9 @@ private:
 
 	UPROPERTY(EditAnywhere)
 	UCurveFloat *DissolveCurve;
+
+	UPROPERTY()
+	class ABlasterPlayerState *BlasterPlayerState;
 
 	UFUNCTION()
 	void UpdateDissolveMaterial(float DissolveValue);

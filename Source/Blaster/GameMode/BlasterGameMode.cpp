@@ -4,7 +4,8 @@
 #include "Blaster/Character/BlasterCharacter.h"
 #include "Kismet/GameplayStatics.h"
 #include "GameFramework/PlayerStart.h"
-// #include "Blaster/PlayerState/BlasterPlayerState.h"
+#include "Blaster/PlayerState/BlasterPlayerState.h"
+#include "Blaster/PlayerController/BlasterPlayerController.h"
 // #include "Blaster/GameState/BlasterGameState.h"
 
 void ABlasterGameMode::Tick(float DeltaTime)
@@ -13,6 +14,12 @@ void ABlasterGameMode::Tick(float DeltaTime)
 
 void ABlasterGameMode::PlayerEliminated(ABlasterCharacter *ElimmedCharacter, ABlasterPlayerController *VictimController, ABlasterPlayerController *AttackerController)
 {
+    ABlasterPlayerState *AttackerPlayerState = AttackerController ? Cast<ABlasterPlayerState>(AttackerController->PlayerState) : nullptr;
+    ABlasterPlayerState *VictimControllerState = AttackerController ? Cast<ABlasterPlayerState>(VictimController->PlayerState) : nullptr;
+    if (AttackerPlayerState && AttackerPlayerState != VictimControllerState)
+    {
+        AttackerPlayerState->AddToScore(1.f);
+    }
     if (ElimmedCharacter)
     {
         ElimmedCharacter->Elim();
