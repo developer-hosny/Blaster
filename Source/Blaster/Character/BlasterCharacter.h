@@ -24,7 +24,8 @@ class UInputMappingContext;
 class UInputAction;
 
 UCLASS()
-class BLASTER_API ABlasterCharacter : public ACharacter, public IInteractWithCrosshairsInterface
+class BLASTER_API ABlasterCharacter : public ACharacter,
+									  public IInteractWithCrosshairsInterface
 {
 	GENERATED_BODY()
 
@@ -36,6 +37,8 @@ public:
 	virtual void PostInitializeComponents() override;
 	virtual void Destroyed() override;
 
+	// void PhysicsClimb(float deltaTime, int32 Iterations);
+
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 	class UWidgetComponent *OverheadWidget;
 	void PlayFireMontage(bool bAiming);
@@ -45,6 +48,9 @@ public:
 
 	void PlayElimMontage();
 	void Elim();
+
+	UPROPERTY(VisibleAnywhere)
+	class UCombatComponent *Combat;
 
 protected:
 	// Called when the game starts or when spawned
@@ -69,15 +75,21 @@ private:
 	UPROPERTY(ReplicatedUsing = OnRep_OverlappingWeapon)
 	class AWeapon *OverlappingWeapon;
 
+	UPROPERTY()
+	class AFlyboard *OverlappingFlyboard;
+
+	UPROPERTY()
+	class AFlyboard *EquippedFlyboard;
+
 	UFUNCTION()
 	void OnRep_OverlappingWeapon(AWeapon *LastWeapon);
-
-	UPROPERTY(VisibleAnywhere)
-	class UCombatComponent *Combat;
 
 	UFUNCTION(Server, Reliable)
 	void ServerEquipButtonPressed();
 
+	UFUNCTION(Server, Reliable)
+	void ServerEquipFlyboardButtonPressed();
+	
 	UPROPERTY(EditAnywhere, Category = Combat)
 	class UAnimMontage *FireWeaponMontage;
 
@@ -158,6 +170,7 @@ private:
 
 public:
 	void SetOverlappingWeapon(AWeapon *Weapon);
+	void SetOverlappingFlyboard(AFlyboard *Flyboard);
 	bool IsWeaponEquipped();
 	bool IsAiming();
 	AWeapon *GetEquippedWeapon();
@@ -192,6 +205,9 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	UInputAction *FireAction;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	UInputAction *UpDownAction;
+
 #pragma endregion
 
 #pragma region InputCallback
@@ -204,5 +220,8 @@ public:
 	void AimButtonReleased();
 	void FireButtonPressed();
 	void FireButtonReleased();
+	void EquipFlyboardButtonPressed();
+
+	void MoveUpDown(const FInputActionValue &Value);
 #pragma endregion
 };

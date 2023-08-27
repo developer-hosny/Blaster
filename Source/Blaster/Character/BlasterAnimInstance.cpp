@@ -22,6 +22,16 @@ void UBlasterAnimInstance::NativeUpdateAnimation(float DeltaTime)
 	if (BlasterCharacter == nullptr)
 		return;
 
+	if (Combat == nullptr)
+	{
+		Combat = BlasterCharacter->Combat;
+	}
+
+	if (Flyboard == nullptr)
+	{
+		Flyboard = Combat->EquippedFlyboard;
+	}
+
 	FVector Velocity = BlasterCharacter->GetVelocity();
 	Velocity.Z = 0.f;
 	Speed = Velocity.Size();
@@ -34,7 +44,6 @@ void UBlasterAnimInstance::NativeUpdateAnimation(float DeltaTime)
 	bIsCrouched = BlasterCharacter->bIsCrouched;
 	bAiming = BlasterCharacter->IsAiming();
 	bElimmed = BlasterCharacter->IsElimmed();
-
 
 	// Offset Yaw for strafing
 	const FRotator AimRotator = BlasterCharacter->GetBaseAimRotation();

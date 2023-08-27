@@ -12,12 +12,14 @@
 #include "Particles/ParticleSystemComponent.h"
 #include "Blaster/GameMode/BlasterGameMode.h"
 #include "Blaster/PlayerState/BlasterPlayerState.h"
+#include "Blaster/Flyboard/Flyboard.h"
 
 // Sets default values
 ABlasterCharacter::ABlasterCharacter()
 {
 
 	PrimaryActorTick.bCanEverTick = true;
+	// bReplicates = true;
 
 	SpawnCollisionHandlingMethod = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
 	CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));
@@ -81,6 +83,7 @@ void ABlasterCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty> &Ou
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
 	DOREPLIFETIME_CONDITION(ABlasterCharacter, OverlappingWeapon, COND_OwnerOnly);
+	// DOREPLIFETIME(ABlasterCharacter, ZValue);
 	DOREPLIFETIME(ABlasterCharacter, Health);
 }
 
@@ -115,6 +118,7 @@ void ABlasterCharacter::SetupPlayerInputComponent(UInputComponent *PlayerInputCo
 
 		// Equipping
 		EnhancedInputComponent->BindAction(EquipAction, ETriggerEvent::Triggered, this, &ThisClass::EquipButtonPressed);
+		EnhancedInputComponent->BindAction(EquipAction, ETriggerEvent::Triggered, this, &ThisClass::EquipFlyboardButtonPressed);
 
 		// Crouching
 		EnhancedInputComponent->BindAction(CrouchAction, ETriggerEvent::Triggered, this, &ThisClass::CrouchButtonPressed);
@@ -126,6 +130,8 @@ void ABlasterCharacter::SetupPlayerInputComponent(UInputComponent *PlayerInputCo
 		// Firing
 		EnhancedInputComponent->BindAction(FireAction, ETriggerEvent::Triggered, this, &ThisClass::FireButtonPressed);
 		EnhancedInputComponent->BindAction(FireAction, ETriggerEvent::Completed, this, &ThisClass::FireButtonReleased);
+
+		EnhancedInputComponent->BindAction(UpDownAction, ETriggerEvent::Triggered, this, &ThisClass::MoveUpDown);
 	}
 }
 
@@ -149,6 +155,11 @@ void ABlasterCharacter::Elim()
 	if (Combat && Combat->EquippedWeapon)
 	{
 		Combat->EquippedWeapon->Dropped();
+	}
+
+	if (Combat && Combat->EquippedFlyboard)
+	{
+		Combat->EquippedFlyboard->Dropped();
 	}
 
 	MulticastElim();
@@ -347,6 +358,18 @@ void ABlasterCharacter::ServerEquipButtonPressed_Implementation()
 	}
 }
 
+void ABlasterCharacter::ServerEquipFlyboardButtonPressed_Implementation()
+{
+
+	if (Combat)
+	{
+		Combat->EquipFlyboard(OverlappingFlyboard);
+		GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Flying);
+		GetCharacterMovement()->MaxFlySpeed = 500.f;
+		GetCharacterMovement()->BrakingDecelerationFlying = 300.f;
+	}
+}
+
 void ABlasterCharacter::OnRep_Health(float LastHealth)
 {
 	UpdateHUDHealth();
@@ -390,6 +413,11 @@ void ABlasterCharacter::SetOverlappingWeapon(AWeapon *Weapon)
 			OverlappingWeapon->ShowPickupWidget(true);
 		}
 	}
+}
+
+void ABlasterCharacter::SetOverlappingFlyboard(AFlyboard *Flyboard)
+{
+	OverlappingFlyboard = Flyboard;
 }
 
 void ABlasterCharacter::OnRep_OverlappingWeapon(AWeapon *LastWeapon)
@@ -476,10 +504,6 @@ void ABlasterCharacter::HideCameraIfCharacterClose()
 		{
 			Combat->EquippedWeapon->GetWeaponMesh()->bOwnerNoSee = true;
 		}
-		// if (Combat && Combat->SecondaryWeapon && Combat->SecondaryWeapon->GetWeaponMesh())
-		//{
-		//	Combat->SecondaryWeapon->GetWeaponMesh()->bOwnerNoSee = true;
-		// }
 	}
 	else
 	{
@@ -488,10 +512,26 @@ void ABlasterCharacter::HideCameraIfCharacterClose()
 		{
 			Combat->EquippedWeapon->GetWeaponMesh()->bOwnerNoSee = false;
 		}
-		// if (Combat && Combat->SecondaryWeapon && Combat->SecondaryWeapon->GetWeaponMesh())
-		//{
-		//	Combat->SecondaryWeapon->GetWeaponMesh()->bOwnerNoSee = false;
-		// }
+	}
+}
+
+void ABlasterCharacter::EquipFlyboardButtonPressed()
+{
+	if (Combat)
+	{
+		// if (Combat->EquippedFlyboard && Combat->EquippedFlyboard == OverlappingFlyboard)
+		// 	return;
+		if (HasAuthority())
+		{
+			Combat->EquipFlyboard(OverlappingFlyboard);
+			GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Flying);
+			GetCharacterMovement()->MaxFlySpeed = 500.f;
+			GetCharacterMovement()->BrakingDecelerationFlying = 300.f;
+		}
+		else
+		{
+			ServerEquipFlyboardButtonPressed();
+		}
 	}
 }
 
@@ -502,5 +542,16 @@ void ABlasterCharacter::Destroyed()
 	if (ElimBotComponent)
 	{
 		ElimBotComponent->DestroyComponent();
+	}
+}
+
+void ABlasterCharacter::MoveUpDown(const FInputActionValue &Value)
+{
+	UE_LOG(LogTemp, Warning, TEXT("MoveUpDown %f"), Value.Get<float>());
+
+	if (Combat && Combat->EquippedFlyboard)
+	{
+		float ZValue = Value.Get<float>() * 100.f * GetWorld()->DeltaTimeSeconds;
+		AddMovementInput(FVector(0.0f, 0.0f, ZValue));
 	}
 }

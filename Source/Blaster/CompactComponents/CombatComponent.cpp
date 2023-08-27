@@ -44,6 +44,7 @@ void UCombatComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty> &Out
 
 	DOREPLIFETIME(UCombatComponent, EquippedWeapon);
 	DOREPLIFETIME(UCombatComponent, bAiming);
+	DOREPLIFETIME(UCombatComponent, EquippedFlyboard);
 }
 
 void UCombatComponent::EquipWeapon(AWeapon *WeaponToEquip)
@@ -319,5 +320,38 @@ void UCombatComponent::MulticastFire_Implementation(const FVector_NetQuantize &T
 	{
 		Character->PlayFireMontage(bAiming);
 		EquippedWeapon->Fire(TraceHitTarget);
+	}
+}
+
+void UCombatComponent::EquipFlyboard(AFlyboard *FlyBoardToEquip)
+{
+	if (Character == nullptr || FlyBoardToEquip == nullptr)
+		return;
+
+	EquippedFlyboard = FlyBoardToEquip;
+	// EquippedWeapon->SetWeaponState(EWeaponState::EWS_Equipped);
+
+	const USkeletalMeshSocket *FlyBoardSocket = Character->GetMesh()->GetSocketByName(FName("FlyboardSocket"));
+
+	if (FlyBoardSocket)
+	{
+		FlyBoardSocket->AttachActor(EquippedFlyboard, Character->GetMesh());
+	}
+
+	EquippedFlyboard->SetOwner(Character);
+}
+
+void UCombatComponent::OnRep_EquippedFlyboard()
+{
+
+	if (EquippedFlyboard && Character)
+	{
+
+		const USkeletalMeshSocket *FlyBoardSocket = Character->GetMesh()->GetSocketByName(FName("FlyboardSocket"));
+
+		if (FlyBoardSocket)
+		{
+			FlyBoardSocket->AttachActor(EquippedFlyboard, Character->GetMesh());
+		}
 	}
 }

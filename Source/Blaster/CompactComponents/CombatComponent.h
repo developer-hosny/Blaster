@@ -5,22 +5,24 @@
 #include "CoreMinimal.h"
 #include "Components/SphereComponent.h"
 #include "Blaster/HUD/BlasterHUD.h"
+#include "Blaster/Flyboard/Flyboard.h"
 
 #include "CombatComponent.generated.h"
 
 class AWeapon;
 
-UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
+UCLASS(ClassGroup = (Custom), meta = (BlueprintSpawnableComponent))
 class BLASTER_API UCombatComponent : public UActorComponent
 {
 	GENERATED_BODY()
 
-public:	
+public:
 	UCombatComponent();
-	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
+	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction *ThisTickFunction) override;
 	friend class ABlasterCharacter;
-	void EquipWeapon(AWeapon* WeaponToEquip);
-	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+	void EquipWeapon(AWeapon *WeaponToEquip);
+	void EquipFlyboard(AFlyboard *FlyBoardToEquip);
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty> &OutLifetimeProps) const override;
 
 protected:
 	virtual void BeginPlay() override;
@@ -32,30 +34,33 @@ protected:
 	UFUNCTION()
 	void OnRep_EquippedWeapon();
 
+	UFUNCTION()
+	void OnRep_EquippedFlyboard();
+
 	void FireButtonPressed(bool bPressed);
 
 	UFUNCTION(Server, Reliable)
 	void ServerFire(const FVector_NetQuantize &TraceHitTarget);
 
 	UFUNCTION(NetMulticast, Reliable)
-	void MulticastFire(const FVector_NetQuantize& TraceHitTarget);
+	void MulticastFire(const FVector_NetQuantize &TraceHitTarget);
 
-	void TraceUnderCrosshairs(FHitResult& TraceHitResult);
+	void TraceUnderCrosshairs(FHitResult &TraceHitResult);
 
 	void SetHUDCrosshairs(float DeltaTime);
 
 private:
 	UPROPERTY()
-	class ABlasterCharacter* Character;
+	class ABlasterCharacter *Character;
 	UPROPERTY()
-	class ABlasterPlayerController* Controller;
+	class ABlasterPlayerController *Controller;
 	UPROPERTY()
-	class ABlasterHUD* HUD;
+	class ABlasterHUD *HUD;
 
 	FHUDPackage HUDPackage;
 
 	UPROPERTY(ReplicatedUsing = OnRep_EquippedWeapon)
-	AWeapon* EquippedWeapon;
+	AWeapon *EquippedWeapon;
 
 	UPROPERTY(Replicated)
 	bool bAiming;
@@ -70,8 +75,8 @@ private:
 	bool bFireButtonPressed;
 
 	/**
-	* HUD and crosshairs
-	*/
+	 * HUD and crosshairs
+	 */
 
 	float CrosshairVelocityFactor;
 	float CrosshairInAirFactor;
@@ -80,10 +85,9 @@ private:
 
 	FVector HitTarget;
 
-
 	/**
-	* Aiming and FOV
-	*/
+	 * Aiming and FOV
+	 */
 
 	// Field of view when not aiming; set to the camera's base FOV in BeginPlay
 	float DefaultFOV;
@@ -98,10 +102,9 @@ private:
 
 	void InterpFOV(float DeltaTime);
 
-
 	/**
-	* Automatic fire
-	*/
+	 * Automatic fire
+	 */
 
 	FTimerHandle FireTimer;
 	bool bCanFire = true;
@@ -112,8 +115,8 @@ private:
 	bool CanFire();
 
 	void Fire();
-public:	
 
-
-		
+public:
+	UPROPERTY(ReplicatedUsing = OnRep_EquippedFlyboard)
+	AFlyboard *EquippedFlyboard;
 };
