@@ -41,6 +41,7 @@ private:
 	UPROPERTY(BlueprintReadOnly, Category = Movement, meta = (AllowPrivateAccess = "true"))
 	bool bWeaponEquipped;
 
+	UPROPERTY()
 	class AWeapon *EquippedWeapon;
 
 	UPROPERTY(BlueprintReadOnly, Category = Movement, meta = (AllowPrivateAccess = "true"))
@@ -57,6 +58,9 @@ private:
 
 	UPROPERTY(BlueprintReadOnly, Category = Movement, meta = (AllowPrivateAccess = "true"))
 	bool bElimmed;
+
+	UPROPERTY(BlueprintReadOnly, Category = Equipment, meta = (AllowPrivateAccess = "true"))
+	bool bIsEquippedFlyboard;
 
 	UPROPERTY(BlueprintReadOnly, Category = Movement, meta = (AllowPrivateAccess = "true"))
 	UCombatComponent *Combat;

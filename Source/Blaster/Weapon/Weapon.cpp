@@ -183,6 +183,4 @@ void AWeapon::Dropped()
 	FDetachmentTransformRules DetachRules(EDetachmentRule::KeepWorld, true);
 	WeaponMesh->DetachFromComponent(DetachRules);
 	SetOwner(nullptr);
-	// BlasterOwnerCharacter = nullptr;
-	// BlasterOwnerController = nullptr;
 }

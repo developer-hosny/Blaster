@@ -5,8 +5,15 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "Components/SphereComponent.h"
+#include "Components/StaticMeshComponent.h"
+#include "Components/BoxComponent.h"
+#include "NiagaraComponent.h"
+#include "Engine/SkeletalMeshSocket.h"
 
 #include "Flyboard.generated.h"
+
+class UParticleSystemComponent;
+class UNiagaraComponent;
 
 UCLASS()
 class BLASTER_API AFlyboard : public AActor
@@ -17,9 +24,13 @@ public:
 	virtual void Tick(float DeltaTime) override;
 	AFlyboard();
 	void Dropped();
+	void ActiveThruster(bool bIsActive);
 
 private:
-	UPROPERTY(VisibleAnywhere, Category = "Weapon Properties")
+	UPROPERTY(VisibleAnywhere, Category = "Flyboard Properties")
+	class USkeletalMeshComponent *FlyboardMesh;
+
+	UPROPERTY(VisibleAnywhere, Category = "Flyboard Properties")
 	class USphereComponent *AreaSphere;
 
 	UFUNCTION()
@@ -36,6 +47,25 @@ private:
 		AActor *OtherActor,
 		UPrimitiveComponent *OtherComp,
 		int32 OtherBodyIndex);
+
+	UPROPERTY(EditAnywhere)
+	class UBoxComponent *CollisionBox;
+
+	UPROPERTY()
+	USceneComponent *DefaultRoot = nullptr;
+
+	UPROPERTY(EditAnywhere, Category = Jet, meta = (AllowPrivateAccess = "true"))
+	UStaticMeshComponent *LeftJet = nullptr;
+	UPROPERTY(EditAnywhere, Category = Jet, meta = (AllowPrivateAccess = "true"))
+	UStaticMeshComponent *RightJet = nullptr;
+
+	UPROPERTY(EditAnywhere, Category = Jet, meta = (AllowPrivateAccess = "true"))
+	UStaticMeshComponent *JetConnector = nullptr;
+
+	UPROPERTY(EditAnywhere, Category = Thruster, meta = (AllowPrivateAccess = "true"))
+	UNiagaraComponent *ThrusterLeft;
+	UPROPERTY(EditAnywhere, Category = Thruster, meta = (AllowPrivateAccess = "true"))
+	UNiagaraComponent *ThrusterRight;
 
 protected:
 	virtual void BeginPlay() override;

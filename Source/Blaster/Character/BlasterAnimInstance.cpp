@@ -45,6 +45,8 @@ void UBlasterAnimInstance::NativeUpdateAnimation(float DeltaTime)
 	bAiming = BlasterCharacter->IsAiming();
 	bElimmed = BlasterCharacter->IsElimmed();
 
+	bIsEquippedFlyboard = BlasterCharacter->GetEquippedFlyboard() != nullptr;
+
 	// Offset Yaw for strafing
 	const FRotator AimRotator = BlasterCharacter->GetBaseAimRotation();
 	const FRotator MovementRotator = UKismetMathLibrary::MakeRotFromX(BlasterCharacter->GetVelocity());

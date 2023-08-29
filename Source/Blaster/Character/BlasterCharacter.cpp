@@ -83,6 +83,7 @@ void ABlasterCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty> &Ou
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
 	DOREPLIFETIME_CONDITION(ABlasterCharacter, OverlappingWeapon, COND_OwnerOnly);
+	DOREPLIFETIME_CONDITION(ABlasterCharacter, OverlappingFlyboard, COND_OwnerOnly);
 	// DOREPLIFETIME(ABlasterCharacter, ZValue);
 	DOREPLIFETIME(ABlasterCharacter, Health);
 }
@@ -111,14 +112,13 @@ void ABlasterCharacter::SetupPlayerInputComponent(UInputComponent *PlayerInputCo
 		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Completed, this, &ACharacter::StopJumping);
 
 		// Moving
-		EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &ThisClass::HandleGroundMovementInput);
+		EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &ThisClass::HandleMovementInput);
 
 		// Looking
 		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &ThisClass::Look);
 
 		// Equipping
 		EnhancedInputComponent->BindAction(EquipAction, ETriggerEvent::Triggered, this, &ThisClass::EquipButtonPressed);
-		EnhancedInputComponent->BindAction(EquipAction, ETriggerEvent::Triggered, this, &ThisClass::EquipFlyboardButtonPressed);
 
 		// Crouching
 		EnhancedInputComponent->BindAction(CrouchAction, ETriggerEvent::Triggered, this, &ThisClass::CrouchButtonPressed);
@@ -131,7 +131,7 @@ void ABlasterCharacter::SetupPlayerInputComponent(UInputComponent *PlayerInputCo
 		EnhancedInputComponent->BindAction(FireAction, ETriggerEvent::Triggered, this, &ThisClass::FireButtonPressed);
 		EnhancedInputComponent->BindAction(FireAction, ETriggerEvent::Completed, this, &ThisClass::FireButtonReleased);
 
-		EnhancedInputComponent->BindAction(UpDownAction, ETriggerEvent::Triggered, this, &ThisClass::MoveUpDown);
+		EnhancedInputComponent->BindAction(UpDownAction, ETriggerEvent::Triggered, this, &ThisClass::HandleMoveUpDown);
 	}
 }
 
@@ -209,6 +209,13 @@ void ABlasterCharacter::MulticastElim_Implementation()
 	if (ElimBotSound)
 	{
 		UGameplayStatics::SpawnSoundAtLocation(this, ElimBotSound, GetActorLocation());
+	}
+
+	if (Combat && Combat->EquippedFlyboard)
+	{
+		// Combat->EquippedFlyboard->SetSimulatePhysics(true);
+		// Combat->EquippedFlyboard->SetEnableGravity(true);
+		Combat->EquippedFlyboard->Dropped();
 	}
 }
 
@@ -290,21 +297,6 @@ void ABlasterCharacter::PollInit()
 	}
 }
 
-void ABlasterCharacter::EquipButtonPressed()
-{
-	if (Combat)
-	{
-		if (HasAuthority())
-		{
-			Combat->EquipWeapon(OverlappingWeapon);
-		}
-		else
-		{
-			ServerEquipButtonPressed();
-		}
-	}
-}
-
 void ABlasterCharacter::CrouchButtonPressed()
 {
 	if (bIsCrouched)
@@ -349,27 +341,6 @@ void ABlasterCharacter::FireButtonReleased()
 	}
 }
 
-void ABlasterCharacter::ServerEquipButtonPressed_Implementation()
-{
-
-	if (Combat)
-	{
-		Combat->EquipWeapon(OverlappingWeapon);
-	}
-}
-
-void ABlasterCharacter::ServerEquipFlyboardButtonPressed_Implementation()
-{
-
-	if (Combat)
-	{
-		Combat->EquipFlyboard(OverlappingFlyboard);
-		GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Flying);
-		GetCharacterMovement()->MaxFlySpeed = 500.f;
-		GetCharacterMovement()->BrakingDecelerationFlying = 300.f;
-	}
-}
-
 void ABlasterCharacter::OnRep_Health(float LastHealth)
 {
 	UpdateHUDHealth();
@@ -397,6 +368,7 @@ void ABlasterCharacter::StartDissolve()
 	}
 }
 
+#pragma region Overlapping
 void ABlasterCharacter::SetOverlappingWeapon(AWeapon *Weapon)
 {
 	if (OverlappingWeapon)
@@ -420,6 +392,15 @@ void ABlasterCharacter::SetOverlappingFlyboard(AFlyboard *Flyboard)
 	OverlappingFlyboard = Flyboard;
 }
 
+void ABlasterCharacter::OnRep_OverlappingFlyboard(AFlyboard *LastFlyboard)
+{
+	// OverlappingFlyboard = LastFlyboard;
+	// if (OverlappingFlyboard)
+	// {
+	// 	ABlasterCharacter::EquipOverlappingFlyboard();
+	// }
+}
+
 void ABlasterCharacter::OnRep_OverlappingWeapon(AWeapon *LastWeapon)
 {
 	if (OverlappingWeapon)
@@ -431,6 +412,7 @@ void ABlasterCharacter::OnRep_OverlappingWeapon(AWeapon *LastWeapon)
 		LastWeapon->ShowPickupWidget(false);
 	}
 }
+#pragma endregion
 
 // Called every frame
 void ABlasterCharacter::Tick(float DeltaTime)
@@ -438,6 +420,18 @@ void ABlasterCharacter::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 	HideCameraIfCharacterClose();
 	PollInit();
+}
+
+void ABlasterCharacter::HandleMovementInput(const FInputActionValue &Value)
+{
+	if (Combat && Combat->EquippedFlyboard)
+	{
+		HandleFlyboardMovementInput(Value);
+	}
+	else
+	{
+		HandleGroundMovementInput(Value);
+	}
 }
 
 void ABlasterCharacter::HandleGroundMovementInput(const FInputActionValue &Value)
@@ -463,6 +457,43 @@ void ABlasterCharacter::HandleGroundMovementInput(const FInputActionValue &Value
 	}
 }
 
+void ABlasterCharacter::HandleFlyboardMovementInput(const FInputActionValue &Value)
+{
+	// input is a Vector2D
+	const FVector2D MovementVector = Value.Get<FVector2D>();
+
+	if (Controller != nullptr)
+	{
+		// find out which way is forward
+		const FRotator Rotation = Controller->GetControlRotation();
+		const FRotator YawRotation(0, Rotation.Yaw, 0);
+
+		// get forward vector
+		const FVector ForwardDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X);
+
+		// get right vector
+		const FVector RightDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
+
+		// add movement
+		AddMovementInput(ForwardDirection, MovementVector.Y);
+		AddMovementInput(RightDirection, MovementVector.X);
+	}
+}
+
+void ABlasterCharacter::HandleMoveUpDown(const FInputActionValue &Value)
+{
+	if (Combat && Combat->EquippedFlyboard)
+	{
+		if (Controller != nullptr)
+		{
+			// float ZValue = Value.Get<float>() * 100.f * GetWorld()->DeltaTimeSeconds;
+			float ZValue = Value.Get<float>();
+			AddMovementInput(FVector(0.0f, 0.0f, ZValue), 9.f, false);
+			UE_LOG(LogTemp, Warning, TEXT("ZValue %f"), ZValue);
+		}
+	}
+}
+
 void ABlasterCharacter::Look(const FInputActionValue &Value)
 {
 	// input is a Vector2D
@@ -485,12 +516,18 @@ bool ABlasterCharacter::IsAiming()
 {
 	return (Combat && Combat->bAiming);
 }
-
 AWeapon *ABlasterCharacter::GetEquippedWeapon()
 {
 	if (Combat == nullptr)
 		return nullptr;
 	return Combat->EquippedWeapon;
+}
+
+AFlyboard *ABlasterCharacter::GetEquippedFlyboard()
+{
+	if (Combat == nullptr)
+		return nullptr;
+	return Combat->EquippedFlyboard;
 }
 
 void ABlasterCharacter::HideCameraIfCharacterClose()
@@ -515,26 +552,6 @@ void ABlasterCharacter::HideCameraIfCharacterClose()
 	}
 }
 
-void ABlasterCharacter::EquipFlyboardButtonPressed()
-{
-	if (Combat)
-	{
-		// if (Combat->EquippedFlyboard && Combat->EquippedFlyboard == OverlappingFlyboard)
-		// 	return;
-		if (HasAuthority())
-		{
-			Combat->EquipFlyboard(OverlappingFlyboard);
-			GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Flying);
-			GetCharacterMovement()->MaxFlySpeed = 500.f;
-			GetCharacterMovement()->BrakingDecelerationFlying = 300.f;
-		}
-		else
-		{
-			ServerEquipFlyboardButtonPressed();
-		}
-	}
-}
-
 void ABlasterCharacter::Destroyed()
 {
 	Super::Destroyed();
@@ -545,13 +562,59 @@ void ABlasterCharacter::Destroyed()
 	}
 }
 
-void ABlasterCharacter::MoveUpDown(const FInputActionValue &Value)
+#pragma region Equipment
+void ABlasterCharacter::EquipButtonPressed()
 {
-	UE_LOG(LogTemp, Warning, TEXT("MoveUpDown %f"), Value.Get<float>());
-
-	if (Combat && Combat->EquippedFlyboard)
+	if (Combat)
 	{
-		float ZValue = Value.Get<float>() * 100.f * GetWorld()->DeltaTimeSeconds;
-		AddMovementInput(FVector(0.0f, 0.0f, ZValue));
+		if (OverlappingWeapon)
+		{
+			ABlasterCharacter::EquipOverlappingWeapon();
+		}
+		else if (OverlappingFlyboard)
+		{
+			ABlasterCharacter::EquipOverlappingFlyboard();
+		}
 	}
 }
+
+void ABlasterCharacter::EquipOverlappingWeapon()
+{
+	if (HasAuthority())
+	{
+		Combat->EquipWeapon(OverlappingWeapon);
+	}
+	else
+	{
+		ServerEquipWeapon();
+	}
+}
+
+void ABlasterCharacter::EquipOverlappingFlyboard()
+{
+	if (HasAuthority())
+	{
+		Combat->EquipFlyboard(OverlappingFlyboard);
+		GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Flying);
+		GetCharacterMovement()->MaxFlySpeed = 3000.f;
+		GetCharacterMovement()->BrakingDecelerationFlying = 300.f;
+	}
+	else
+	{
+		ServerEquipFlyboard();
+	}
+}
+
+void ABlasterCharacter::ServerEquipWeapon_Implementation()
+{
+	Combat->EquipWeapon(OverlappingWeapon);
+}
+
+void ABlasterCharacter::ServerEquipFlyboard_Implementation()
+{
+	Combat->EquipFlyboard(OverlappingFlyboard);
+	GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Flying);
+	GetCharacterMovement()->MaxFlySpeed = 500.f;
+	GetCharacterMovement()->BrakingDecelerationFlying = 300.f;
+}
+#pragma endregion

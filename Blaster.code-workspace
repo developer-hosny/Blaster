@@ -11,12 +11,7 @@
 	],
 	"settings": {
 		"typescript.tsc.autoDetect": "off",
-		"npm.autoDetect": "off",
-		"files.associations": {
-			"filesystem": "cpp",
-			"__config": "cpp"
-		},
-		"dotnet.defaultSolution": "Blaster/Blaster.sln"
+		"npm.autoDetect": "off"
 	},
 	"extensions": {
 		"recommendations": [
@@ -739,7 +734,8 @@
 				"request": "launch",
 				"program": "D:\\Unreal Projects\\Blaster\\Binaries\\Win64\\UnrealGame-Win64-Debug.exe",
 				"preLaunchTask": "Blaster Win64 Debug Build",
-				"args": [],
+				"args": [
+				],
 				"cwd": "D:\\Games\\Epic Games\\UE_5.3",
 				"stopAtEntry": false,
 				"console": "externalTerminal",
@@ -754,7 +750,8 @@
 				"request": "launch",
 				"program": "D:\\Unreal Projects\\Blaster\\Binaries\\Win64\\UnrealGame-Win64-DebugGame.exe",
 				"preLaunchTask": "Blaster Win64 DebugGame Build",
-				"args": [],
+				"args": [
+				],
 				"cwd": "D:\\Games\\Epic Games\\UE_5.3",
 				"stopAtEntry": false,
 				"console": "externalTerminal",
@@ -769,7 +766,8 @@
 				"request": "launch",
 				"program": "D:\\Unreal Projects\\Blaster\\Binaries\\Win64\\UnrealGame.exe",
 				"preLaunchTask": "Blaster Win64 Development Build",
-				"args": [],
+				"args": [
+				],
 				"cwd": "D:\\Games\\Epic Games\\UE_5.3",
 				"stopAtEntry": false,
 				"console": "externalTerminal",
@@ -784,7 +782,8 @@
 				"request": "launch",
 				"program": "D:\\Unreal Projects\\Blaster\\Binaries\\Win64\\UnrealGame-Win64-Test.exe",
 				"preLaunchTask": "Blaster Win64 Test Build",
-				"args": [],
+				"args": [
+				],
 				"cwd": "D:\\Games\\Epic Games\\UE_5.3",
 				"stopAtEntry": false,
 				"console": "externalTerminal",
@@ -799,7 +798,8 @@
 				"request": "launch",
 				"program": "D:\\Unreal Projects\\Blaster\\Binaries\\Win64\\UnrealGame-Win64-Shipping.exe",
 				"preLaunchTask": "Blaster Win64 Shipping Build",
-				"args": [],
+				"args": [
+				],
 				"cwd": "D:\\Games\\Epic Games\\UE_5.3",
 				"stopAtEntry": false,
 				"console": "externalTerminal",

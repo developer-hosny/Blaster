@@ -75,7 +75,7 @@ private:
 	UPROPERTY(ReplicatedUsing = OnRep_OverlappingWeapon)
 	class AWeapon *OverlappingWeapon;
 
-	UPROPERTY()
+	UPROPERTY(ReplicatedUsing = OnRep_OverlappingFlyboard)
 	class AFlyboard *OverlappingFlyboard;
 
 	UPROPERTY()
@@ -84,12 +84,15 @@ private:
 	UFUNCTION()
 	void OnRep_OverlappingWeapon(AWeapon *LastWeapon);
 
-	UFUNCTION(Server, Reliable)
-	void ServerEquipButtonPressed();
+	UFUNCTION()
+	void OnRep_OverlappingFlyboard(AFlyboard *LastFlyboard);
 
 	UFUNCTION(Server, Reliable)
-	void ServerEquipFlyboardButtonPressed();
-	
+	void ServerEquipWeapon();
+
+	UFUNCTION(Server, Reliable)
+	void ServerEquipFlyboard();
+
 	UPROPERTY(EditAnywhere, Category = Combat)
 	class UAnimMontage *FireWeaponMontage;
 
@@ -174,6 +177,7 @@ public:
 	bool IsWeaponEquipped();
 	bool IsAiming();
 	AWeapon *GetEquippedWeapon();
+	AFlyboard *GetEquippedFlyboard();
 	FORCEINLINE UCameraComponent *GetFollowCamera() const { return FollowCamera; }
 	FORCEINLINE bool IsElimmed() const { return bElimmed; }
 	FORCEINLINE float GetHealth() const { return Health; }
@@ -211,17 +215,21 @@ public:
 #pragma endregion
 
 #pragma region InputCallback
-
-	void HandleGroundMovementInput(const FInputActionValue &Value);
-	void Look(const FInputActionValue &Value);
 	void EquipButtonPressed();
+	void EquipOverlappingWeapon();
+	void EquipOverlappingFlyboard();
+
+	void HandleMovementInput(const FInputActionValue &Value);
+	void HandleGroundMovementInput(const FInputActionValue &Value);
+	void HandleFlyboardMovementInput(const FInputActionValue &Value);
+	void HandleMoveUpDown(const FInputActionValue &Value);
+
+	void Look(const FInputActionValue &Value);
 	void CrouchButtonPressed();
 	void AimButtonPressed();
 	void AimButtonReleased();
 	void FireButtonPressed();
 	void FireButtonReleased();
-	void EquipFlyboardButtonPressed();
 
-	void MoveUpDown(const FInputActionValue &Value);
 #pragma endregion
 };

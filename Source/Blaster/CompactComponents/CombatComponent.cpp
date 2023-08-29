@@ -47,45 +47,6 @@ void UCombatComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty> &Out
 	DOREPLIFETIME(UCombatComponent, EquippedFlyboard);
 }
 
-void UCombatComponent::EquipWeapon(AWeapon *WeaponToEquip)
-{
-	if (Character == nullptr || WeaponToEquip == nullptr)
-		return;
-
-	EquippedWeapon = WeaponToEquip;
-	EquippedWeapon->SetWeaponState(EWeaponState::EWS_Equipped);
-
-	const USkeletalMeshSocket *HandSocket = Character->GetMesh()->GetSocketByName(FName("RightHandSocket"));
-
-	if (HandSocket)
-	{
-		HandSocket->AttachActor(EquippedWeapon, Character->GetMesh());
-	}
-
-	EquippedWeapon->SetOwner(Character);
-
-	Character->GetCharacterMovement()->bOrientRotationToMovement = false;
-	Character->bUseControllerRotationYaw = true;
-}
-
-void UCombatComponent::OnRep_EquippedWeapon()
-{
-	if (EquippedWeapon && Character)
-	{
-		EquippedWeapon->SetWeaponState(EWeaponState::EWS_Equipped);
-
-		const USkeletalMeshSocket *HandSocket = Character->GetMesh()->GetSocketByName(FName("RightHandSocket"));
-
-		if (HandSocket)
-		{
-			HandSocket->AttachActor(EquippedWeapon, Character->GetMesh());
-		}
-
-		Character->GetCharacterMovement()->bOrientRotationToMovement = false;
-		Character->bUseControllerRotationYaw = true;
-	}
-}
-
 void UCombatComponent::BeginPlay()
 {
 	Super::BeginPlay();
@@ -323,13 +284,55 @@ void UCombatComponent::MulticastFire_Implementation(const FVector_NetQuantize &T
 	}
 }
 
+#pragma region Equipment
+
+void UCombatComponent::EquipWeapon(AWeapon *WeaponToEquip)
+{
+	if (Character == nullptr || WeaponToEquip == nullptr)
+		return;
+
+	EquippedWeapon = WeaponToEquip;
+	EquippedWeapon->SetWeaponState(EWeaponState::EWS_Equipped);
+
+	const USkeletalMeshSocket *HandSocket = Character->GetMesh()->GetSocketByName(FName("RightHandSocket"));
+
+	if (HandSocket)
+	{
+		HandSocket->AttachActor(EquippedWeapon, Character->GetMesh());
+	}
+
+	EquippedWeapon->SetOwner(Character);
+
+	Character->GetCharacterMovement()->bOrientRotationToMovement = false;
+	Character->bUseControllerRotationYaw = true;
+}
+
+void UCombatComponent::OnRep_EquippedWeapon()
+{
+	if (EquippedWeapon && Character)
+	{
+		EquippedWeapon->SetWeaponState(EWeaponState::EWS_Equipped);
+
+		const USkeletalMeshSocket *HandSocket = Character->GetMesh()->GetSocketByName(FName("RightHandSocket"));
+
+		if (HandSocket)
+		{
+			HandSocket->AttachActor(EquippedWeapon, Character->GetMesh());
+		}
+
+		Character->GetCharacterMovement()->bOrientRotationToMovement = false;
+		Character->bUseControllerRotationYaw = true;
+	}
+}
+
 void UCombatComponent::EquipFlyboard(AFlyboard *FlyBoardToEquip)
 {
 	if (Character == nullptr || FlyBoardToEquip == nullptr)
 		return;
 
 	EquippedFlyboard = FlyBoardToEquip;
-	// EquippedWeapon->SetWeaponState(EWeaponState::EWS_Equipped);
+
+	EquippedFlyboard->ActiveThruster(true);
 
 	const USkeletalMeshSocket *FlyBoardSocket = Character->GetMesh()->GetSocketByName(FName("FlyboardSocket"));
 
@@ -343,9 +346,9 @@ void UCombatComponent::EquipFlyboard(AFlyboard *FlyBoardToEquip)
 
 void UCombatComponent::OnRep_EquippedFlyboard()
 {
-
 	if (EquippedFlyboard && Character)
 	{
+		EquippedFlyboard->ActiveThruster(true);
 
 		const USkeletalMeshSocket *FlyBoardSocket = Character->GetMesh()->GetSocketByName(FName("FlyboardSocket"));
 
@@ -355,3 +358,4 @@ void UCombatComponent::OnRep_EquippedFlyboard()
 		}
 	}
 }
+#pragma endregion
